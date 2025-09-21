@@ -2,14 +2,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  eslint: {
-    // ビルド時に ESLint エラーを無視
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    // 型エラーでもビルドを止めない
-    ignoreBuildErrors: true,
-  },
+  reactStrictMode: true,
+  // ここに redirects/basePath/output などは入れない
 };
 
 export default nextConfig;

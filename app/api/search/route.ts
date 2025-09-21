@@ -2,230 +2,174 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { hashKey } from "@/lib/hash";
 
-type SearchBody = {
-  keyword: string;
-  location: string;
-  apiKey: string;
-};
+export const runtime = "nodejs";
 
-type TextSearchPlace = {
-  place_id: string;
-  name?: string;
-  formatted_address?: string;
-  rating?: number;
-};
-
-type TextSearchResponse = {
-  results: TextSearchPlace[];
-  next_page_token?: string;
-  status: string;
-};
-
-type PlaceDetails = {
-  name?: string;
-  website?: string;
-  formatted_phone_number?: string;
-  formatted_address?: string;
-  rating?: number;
-};
-
-type PlaceDetailsResponse = {
-  result?: PlaceDetails;
-  status: string;
-};
-
-type ResultItem = {
-  番号: number;
-  店舗名: string;
-  住所: string;
-  電話番号: string;
-  評価: number | null;
-  サイトリンク: string | "サイトなし";
-  メールアドレス: string | null;
-  インスタグラム: string | null;
-  検索キーワード: string;
-  検索地域: string;
-};
-
-function sleep(ms: number) {
-  return new Promise((res) => setTimeout(res, ms));
-}
-
-function cleanAddress(addr?: string): string {
-  if (!addr) return "住所不明";
-  // 「日本」「〒xxxx-xxxx」を除去 & 先頭の句読点/空白を除去
-  let s = addr
-    .replace(/日本/g, "")
-    .replace(/〒[0-9\-]+/g, "")
-    .trim();
-  s = s.replace(/^[、\s]+/, "");
-  return s || "住所不明";
-}
-
-function pickMainInstagram(urls: string[]): string | null {
-  const unique = Array.from(new Set(urls));
-  // /p/ (投稿)や/reel/は個別投稿なので除外し、/profiles/ も避け、ユーザープロファイルらしいものを優先
-  const candidates = unique.filter((u) => {
-    try {
-      const uo = new URL(u);
-      if (!uo.hostname.includes("instagram.com")) return false;
-      const p = uo.pathname;
-      if (p.startsWith("/p/") || p.startsWith("/reel/") || p.startsWith("/explore/")) return false;
-      return true;
-    } catch {
-      return false;
-    }
-  });
-  return candidates[0] ?? unique[0] ?? null;
-}
-
-function pickMainEmail(emails: string[]): string | null {
-  const blocked = ["example.com", "localhost", "test.com"];
-  const normalized = emails
-    .map((e) => e.trim())
-    .filter((e) => /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(e))
-    .filter((e) => !blocked.some((b) => e.endsWith(`@${b}`)));
-  return Array.from(new Set(normalized))[0] ?? null;
-}
-
-async function extractFromWebsite(url: string): Promise<{ email: string | null; instagram: string | null }> {
-  try {
-    if (!url || url === "サイトなし") return { email: null, instagram: null };
-    const res = await axios.get<string>(url, {
-      headers: { "User-Agent": "Mozilla/5.0" },
-      timeout: 10000,
-      responseType: "text",
-      validateStatus: () => true,
-    });
-    if (res.status < 200 || res.status >= 300) return { email: null, instagram: null };
-
-    const html = res.data ?? "";
-    const $ = cheerio.load(html);
-
-    // メール
-    const text = $.text();
-    const emailMatches = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) ?? [];
-
-    // インスタ
-    const instaUrls: string[] = [];
-    $("a[href]").each((_, el) => {
-      const href = $(el).attr("href");
-      if (href && href.includes("instagram.com")) {
-        // 相対→絶対はサイトURLベースでもOKだが、だいたい絶対URLが多いのでそのまま
-        instaUrls.push(href);
-      }
-    });
-
-    const email = pickMainEmail(instaUrls.length ? emailMatches : emailMatches); // （単純化）メール抽出
-    const instagram = pickMainInstagram(instaUrls);
-    return { email, instagram };
-  } catch {
-    return { email: null, instagram: null };
-  }
-}
+// 仕様：初回アクセス時に free:2, paid:0 を自動付与
+const PER_RUN_FREE = 10; // 無料枠 1実行あたり10件
+const PER_RUN_PAID = 60; // 有料枠 1実行あたり60件
 
 export async function POST(req: NextRequest) {
-  let body: unknown;
   try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
+    const { keyword, location, apiKey } = await req.json();
 
-  // 型チェック（最小限）
-  const { keyword, location, apiKey } = body as Partial<SearchBody>;
-  if (!keyword || !location || !apiKey) {
-    return NextResponse.json({ error: "keyword, location, apiKey は必須です" }, { status: 400 });
-  }
-
-  const query = `${keyword} ${location}`;
-  const base = "https://maps.googleapis.com/maps/api/place";
-
-  async function textSearch(pageToken?: string): Promise<TextSearchResponse> {
-    const url = new URL(`${base}/textsearch/json`);
-    url.searchParams.set("query", query);
-    url.searchParams.set("language", "ja");
-    url.searchParams.set("key", apiKey);
-    if (pageToken) url.searchParams.set("pagetoken", pageToken);
-
-    const res = await axios.get<unknown>(url.toString(), { timeout: 10000 });
-    // 最低限の型安全チェック
-    if (typeof res.data === "object" && res.data !== null && "results" in res.data && Array.isArray((res.data as any).results)) {
-      const data = res.data as TextSearchResponse;
-      return data;
-    }
-    throw new Error("Unexpected TextSearch response");
-  }
-
-  async function details(placeId: string): Promise<PlaceDetails> {
-    const url = new URL(`${base}/details/json`);
-    url.searchParams.set("place_id", placeId);
-    url.searchParams.set("language", "ja");
-    url.searchParams.set("fields", "name,website,formatted_phone_number,formatted_address,rating");
-    url.searchParams.set("key", apiKey);
-
-    const res = await axios.get<unknown>(url.toString(), { timeout: 10000 });
-    if (typeof res.data === "object" && res.data !== null && "result" in res.data) {
-      const data = res.data as PlaceDetailsResponse;
-      return data.result ?? {};
-    }
-    return {};
-  }
-
-  try {
-    const all: TextSearchPlace[] = [];
-    const first = await textSearch();
-    all.push(...first.results);
-
-    let token = first.next_page_token;
-    let page = 1;
-    while (token && page < 3) {
-      await sleep(2000); // Google の仕様上、少し待たないと 2ページ目が  INVALID_REQUEST になる
-      const next = await textSearch(token);
-      all.push(...next.results);
-      token = next.next_page_token;
-      page += 1;
+    if (!keyword || !location || !apiKey) {
+      return NextResponse.json({ error: "パラメータ不足です" }, { status: 400 });
     }
 
-    const results: ResultItem[] = [];
-    for (let i = 0; i < all.length; i++) {
-      const p = all[i];
+    const keyId = hashKey(apiKey);
+    const ref = adminDb.collection("credits_keys").doc(keyId);
+
+    // 1) 残高確認（無ければ付与）
+    let usePaid = false;
+    let perRun = PER_RUN_FREE;
+    let free = 0;
+    let paid = 0;
+
+    await adminDb.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) {
+        free = 2;
+        paid = 0;
+        tx.set(ref, { free, paid, createdAt: new Date() });
+      } else {
+        const d = snap.data() as { free?: number; paid?: number };
+        free = d.free ?? 0;
+        paid = d.paid ?? 0;
+      }
+
+      if (paid > 0) {
+        usePaid = true;
+        perRun = PER_RUN_PAID;
+      } else if (free > 0) {
+        usePaid = false;
+        perRun = PER_RUN_FREE;
+      } else {
+        throw new Response(JSON.stringify({ error: "クレジットがありません。『クレジット購入』で追加してください。" }), { status: 402 });
+      }
+      // 減算は後で（成功時のみ）
+    });
+
+    // 2) Text Search
+    const searchQuery = `${keyword} ${location}`;
+    const textRes = await axios.get("https://maps.googleapis.com/maps/api/place/textsearch/json", {
+      params: { query: searchQuery, key: apiKey, language: "ja" },
+      timeout: 15000,
+      validateStatus: () => true,
+    });
+
+    if (textRes.status !== 200) {
+      return NextResponse.json({ error: `Google Text Search エラー: HTTP ${textRes.status}` }, { status: 502 });
+    }
+    if (textRes.data?.status && textRes.data.status !== "OK") {
+      return NextResponse.json({ error: `TextSearch API: ${textRes.data.status} / ${textRes.data.error_message ?? ""}` }, { status: 502 });
+    }
+
+    const places: any[] = (textRes.data.results ?? []).slice(0, perRun);
+    const results: any[] = [];
+
+    // 3) Details + スクレイピング（1件ずつ）
+    for (let i = 0; i < places.length; i++) {
+      const p = places[i];
       const placeId = p.place_id;
-      const d = await details(placeId);
 
-      const name = d.name ?? p.name ?? "名前不明";
-      const address = cleanAddress(d.formatted_address ?? p.formatted_address ?? "住所不明");
-      const rating: number | null = typeof (d.rating ?? p.rating) === "number" ? (d.rating ?? p.rating)! : null;
-      const website = d.website ?? "サイトなし";
-      const phone = d.formatted_phone_number ?? "電話番号なし";
+      const detailRes = await axios.get("https://maps.googleapis.com/maps/api/place/details/json", {
+        params: {
+          place_id: placeId,
+          key: apiKey,
+          language: "ja",
+          fields: "name,formatted_address,formatted_phone_number,website,rating",
+        },
+        timeout: 15000,
+        validateStatus: () => true,
+      });
 
-      const { email, instagram } = await extractFromWebsite(website);
+      if (detailRes.status !== 200) continue;
+      if (detailRes.data?.status && detailRes.data.status !== "OK") continue;
+
+      const d = detailRes.data?.result ?? {};
+      let email: string | null = null;
+      let insta: string | null = null;
+      const website: string | null = d.website ?? null;
+
+      if (website) {
+        try {
+          const siteRes = await axios.get(website, {
+            headers: { "User-Agent": "Mozilla/5.0" },
+            timeout: 10000,
+            validateStatus: () => true,
+          });
+          if (siteRes.status === 200) {
+            const $ = cheerio.load(siteRes.data);
+            const text = $("body").text();
+
+            const emailMatch = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+            if (emailMatch) email = emailMatch[0];
+
+            const instaLink = $('a[href*="instagram.com"]').first().attr("href");
+            if (instaLink) insta = instaLink;
+          }
+        } catch {}
+      }
+
+      const addr = String(d.formatted_address ?? "住所不明")
+        .replace(/日本/g, "")
+        .replace(/〒[0-9\-]+/g, "")
+        .replace(/^、+/, "")
+        .trim();
 
       results.push({
         番号: i + 1,
-        店舗名: name,
-        住所: address,
-        電話番号: phone,
-        評価: rating,
-        サイトリンク: website,
-        メールアドレス: email,
-        インスタグラム: instagram,
+        店舗名: d.name ?? "名前不明",
+        住所: addr,
+        電話番号: d.formatted_phone_number ?? "電話番号なし",
+        評価: d.rating ?? null,
+        ホームページ: website,
+        メール: email,
+        インスタグラム: insta,
         検索キーワード: keyword,
-        検索地域: location,
+        地域: location,
       });
     }
 
-    // 評価降順に並べ替え（null は最後）
-    results.sort((a, b) => {
-      const ar = a.評価 ?? -Infinity;
-      const br = b.評価 ?? -Infinity;
-      return br - ar;
+    // 4) 成功後にクレジットを1消費（paid優先）
+    let remainingFree = 0;
+    let remainingPaid = 0;
+
+    await adminDb.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const data = (snap.data() as { free?: number; paid?: number }) || {};
+      let f = data.free ?? 0;
+      let p = data.paid ?? 0;
+
+      if (usePaid && p > 0) {
+        p -= 1;
+      } else if (!usePaid && f > 0) {
+        f -= 1;
+      } else {
+        throw new Response(JSON.stringify({ error: "クレジット不足（再試行してください）" }), { status: 409 });
+      }
+
+      tx.set(ref, { free: f, paid: p }, { merge: true });
+      remainingFree = f;
+      remainingPaid = p;
     });
 
-    return NextResponse.json({ results });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "unknown";
-    return NextResponse.json({ error: `search failed: ${message}` }, { status: 500 });
+    return NextResponse.json({
+      mode: usePaid ? "paid" : "free",
+      perRun,
+      remaining: {
+        total: remainingFree + remainingPaid,
+        free: remainingFree,
+        paid: remainingPaid,
+      },
+      results,
+    });
+  } catch (e: any) {
+    if (e instanceof Response) return e;
+    console.error("検索APIエラー:", e?.message || e);
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
 }
