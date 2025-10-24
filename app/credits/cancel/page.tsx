@@ -1,11 +1,32 @@
+// app/credits/cancel/page.tsx
 export default function Cancel() {
   return (
-    <main className="min-h-screen bg-black text-white p-6">
-      <h1 className="text-2xl font-bold mb-2">キャンセルされました</h1>
-      <p className="text-gray-300 mb-6">購入は行われていません。</p>
-      <a className="px-4 py-2 rounded bg-neutral-700 hover:bg-neutral-600" href="/credits">
-        もう一度やり直す
+    <main className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] p-6">
+      <header className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold ">
+          <a href="https://search.uenodesign.site/">検索ツールPro</a>
+        </h1>
+      </header>
+      <h2 className="text-2xl font-bold mb-2">キャンセルされました</h2>
+      <p className="mb-6">購入は行われていません。</p>
+      <a className="px-4 py-2 rounded bg-[#E1E1E7] text-[#1D1D1F] cursor-pointer" href="https://search.uenodesign.site/">
+        検索ページへ戻る
       </a>
+
+      {/* ▼ フッター（特商法・利用規約・プライバシー） */}
+      <footer className="mt-12 border-t border-neutral-300 pt-6 text-sm text-neutral-600">
+        <div className="flex justify-center flex-wrap gap-4">
+          <a className="underline hover:text-[#1D1D1F]" href="/legal/tokushoho">
+            特定商取引法に基づく表記
+          </a>
+          <a className="underline hover:text-[#1D1D1F]" href="/legal/terms">
+            利用規約
+          </a>
+          <a className="underline hover:text-[#1D1D1F]" href="/legal/privacy">
+            プライバシーポリシー
+          </a>
+        </div>
+      </footer>
     </main>
   );
 }
