@@ -1,12 +1,16 @@
-// app/plans/page.tsx
-export default function Plans() {
-  return (
-    <main className="min-h-screen bg-black text-white p-6">
-      <h1 className="text-2xl font-bold mb-4">プラン変更</h1>
-      <p className="text-gray-300 mb-6">standard（月額1,000円）：1回60件／月5回まで</p>
-      <button onClick={() => alert("ここでStripe決済へ。決済成功後、APIキーを standard に登録します。")} className="px-4 py-2 rounded bg-fuchsia-600 hover:bg-fuchsia-700">
-        お支払いへ進む
-      </button>
-    </main>
-  );
+// app/plans/page.tsx  ← サーバーコンポーネント
+import PlansView from "../_components/PlansView";
+
+export default async function PlansPage() {
+  const plans = [
+    { id: "free", name: "無料", credits: 2, price: 0 },
+    {
+      id: "std",
+      name: "有料",
+      credits: 5,
+      price: 1000,
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID, // .env から
+    },
+  ];
+  return <PlansView plans={plans} />;
 }

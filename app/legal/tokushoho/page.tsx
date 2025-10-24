@@ -1,34 +1,53 @@
 // app/legal/tokushoho/page.tsx
 export default function Tokushoho() {
   return (
-    <main className="min-h-screen bg-black text-white p-6">
-      <h1 className="text-2xl font-bold mb-6">特定商取引法に基づく表記</h1>
+    <main className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] p-6">
+      <header className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">
+          <a href="https://search.uenodesign.site/">検索ツールPro</a>
+        </h1>
+      </header>
+      <h2 className="text-2xl font-bold mb-6">特定商取引法に基づく表記</h2>
 
-      <div className="overflow-x-auto rounded-xl border border-neutral-800">
+      <div className="overflow-x-auto rounded-xl border border-neutral-300">
         <table className="min-w-full text-sm">
           <tbody>
             {[
-              ["販売業者", "UENO DESIGN"],
+              ["販売業社の名称", "上野 彰史"],
+              ["所在地", "請求があったら遅滞なく開示します"],
+              ["電話番号", "請求があったら遅滞なく開示します"],
+              ["メールアドレス", "ueno（＠）uenodesign.site　(@)を@に変更ください。"],
               ["運営統括責任者", "上野 彰史"],
-              ["所在地", "請求をいただければ遅滞なく開示します。"],
-              ["電話番号", "請求をいただければ遅滞なく開示します。"],
-              ["メールアドレス", "ueno@uenodesign.site"],
-              ["販売URL", "https://search.uenodesign.site/"],
-              ["販売価格", "クレジット5回 500円"],
-              ["商品代金以外の必要料金", "決済手数料は原則無し。通信料はお客様負担"],
-              ["お支払い方法", "クレジットカード（Stripe）"],
-              ["役務の提供時期", "決済完了後、即時にクレジット付与"],
-              ["返品・キャンセル", "性質上、役務提供後の返金は不可（誤課金はお問い合わせください）"],
-              ["表現および商品に関する注意書き", "効果・結果には個人差があり、必ずしも利益を保証するものではありません"],
+              ["追加手数料等の追加料金", "インターネット接続に伴う通信費はお客様のご負担となります。その他の手数料が発生する場合は、該当ページに明記します。"],
+              ["交換および返品（返金ポリシー）", "デジタル商品の性質上、お客様都合での返金・キャンセルはお受けしておりません。不具合や二重決済など当社の瑕疵がある場合は、調査のうえ返金またはクレジット付与で対応します（お問い合わせ：ueno@uenodesign.site）"],
+              ["引渡時期", "決済完了後、即時にクレジットが付与されます。"],
+              ["受け付け可能な決済手段", "クレジットカード（Stripe）"],
+              ["決済期間", "クレジットカード決済は即時に処理されます。"],
+              ["販売価格", "商品ページに表示（検索クレジット（5回）：税込100円）"],
             ].map(([label, value]) => (
-              <tr key={label} className="odd:bg-neutral-900/40">
-                <th className="w-48 px-4 py-3 text-left font-semibold text-gray-300 border-b border-neutral-800 align-top">{label}</th>
-                <td className="px-4 py-3 border-b border-neutral-800">{value}</td>
+              <tr key={label} className="odd:bg-white">
+                <th className="w-56 px-4 py-3 text-left font-semibold text-[#1D1D1F] border-b border-neutral-300 align-top">{label}</th>
+                <td className="px-4 py-3 border-b border-neutral-300">{value}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* ▼ フッター（特商法・利用規約・プライバシー） */}
+      <footer className="mt-12 border-t border-neutral-300 pt-6 text-sm text-neutral-600">
+        <div className="flex justify-center flex-wrap gap-4">
+          <a className="underline hover:text-[#1D1D1F]" href="/legal/tokushoho">
+            特定商取引法に基づく表記
+          </a>
+          <a className="underline hover:text-[#1D1D1F]" href="/legal/terms">
+            利用規約
+          </a>
+          <a className="underline hover:text-[#1D1D1F]" href="/legal/privacy">
+            プライバシーポリシー
+          </a>
+        </div>
+      </footer>
     </main>
   );
 }
