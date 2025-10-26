@@ -404,18 +404,18 @@ export async function POST(req: NextRequest) {
         paid = typeof d.paid === "number" && Number.isFinite(d.paid) ? d.paid : 0;
         free = typeof d.free === "number" && Number.isFinite(d.free) ? d.free : 0;
       }
+ // ✅ 仕様どおり「無料から消費」
+    if (free > 0) {
+      free -= 1;
+      tx.update(refKey, { free, updatedAt: new Date() });
+      return { usePaid: false, perRun: PER_RUN_FREE, remainingPaid: paid, remainingFree: free };
+    }
 
-      if (paid > 0) {
-        paid -= 1;
-        tx.update(refKey, { paid, updatedAt: new Date() });
-        return { usePaid: true, perRun: PER_RUN_PAID, remainingPaid: paid, remainingFree: free };
-      }
-
-      if (free > 0) {
-        free -= 1;
-        tx.update(refKey, { free, updatedAt: new Date() });
-        return { usePaid: false, perRun: PER_RUN_FREE, remainingPaid: paid, remainingFree: free };
-      }
+    if (paid > 0) {
+      paid -= 1;
+      tx.update(refKey, { paid, updatedAt: new Date() });
+      return { usePaid: true, perRun: PER_RUN_PAID, remainingPaid: paid, remainingFree: free };
+    }
 
       throw new Response(
         JSON.stringify({
@@ -518,6 +518,12 @@ return row;
     }
 
     // ===== レスポンス =====
+
+const creditLabel =
+  (remainingFree > 0 && remainingPaid > 0) ? "無料／有料" :
+  (remainingFree > 0) ? "無料" :
+  (remainingPaid > 0) ? "有料" : "なし";
+
     return NextResponse.json({
       mode: usePaid ? "paid" : "free",
       perRun,
@@ -526,9 +532,12 @@ return row;
         free: remainingFree,
         total: remainingPaid + remainingFree,
       },
-      count: results.length,
-      results,
+   creditLabel, // ✅ フロントはこれをそのまま表示すればOK
+  count: results.length,
+  results,
     });
+
+
   } catch (e: unknown) {
     if (e instanceof Response) return e as Response;
 
