@@ -1,7 +1,11 @@
 // app/page.tsx
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
+
+import Image from "next/image";
+
+
 
 type Row = {
   番号: number;
@@ -17,6 +21,26 @@ type Row = {
 };
 
 export default function Home() {
+
+  // 画像拡大用
+  const [open, setOpen] = useState(false);
+
+  // Escで閉じる＋背景スクロール抑止
+  const onKey = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Escape") setOpen(false);
+  }, []);
+  useEffect(() => {
+    if (!open) return;
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onKey]);
+
+
   const [keyword, setKeyword] = useState("");
   const [location, setLocation] = useState("");
   const [apiKey, setApiKey] = useState("");
@@ -113,12 +137,12 @@ export default function Home() {
 
       <section className="mb-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="検索キーワード（例：美容室、カフェ、パーソナルジム）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
-          <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="地域（例：◯◯市）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
+          <input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="検索キーワード（例：美容室、カフェ、ジム、など）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
+          <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="地域（例：◯◯市、など）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
           <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="APIキー（Google Places API Key）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
         </div>
         <div className="mt-4 flex justify-center">
-          <button onClick={fetchSearch} disabled={loading} className="px-6 py-3 rounded-lg bg-[#0076DF] text-white hover:opacity-90 disabled:opacity-60">
+          <button onClick={fetchSearch} disabled={loading} className="cursor-pointer px-6 py-3 rounded-lg bg-[#0076DF] text-white hover:opacity-90 disabled:opacity-60">
             {loading ? "検索中…" : "検索実行"}
           </button>
         </div>
@@ -163,7 +187,7 @@ export default function Home() {
               <table className="min-w-full text-sm">
                 <thead className="bg-white">
                   <tr>
-                    {["番号", "店舗名", "住所", "電話番号", "評価", "ホームページ", "メール", "インスタグラム", "検索キーワード", "地域"].map((h) => (
+                    {["No", "名称", "住所", "電話番号", "評価", "ホームページ", "メール", "インスタグラム", "検索キーワード", "地域"].map((h) => (
                       <th key={h} className="px-3 py-2 text-center font-semibold text-[#1D1D1F] whitespace-nowrap border-b border-neutral-300">
                         {h}
                       </th>
@@ -220,7 +244,7 @@ export default function Home() {
               <table className="w-full text-left text-sm text-[#1D1D1F]">
                 <thead className="bg-white">
                   <tr className="text-[#1D1D1F]">
-                    {["番号", "店舗名", "住所", "電話番号", "評価", "ホームページ", "メール", "インスタグラム", "検索キーワード", "地域"].map((h) => (
+                    {["No", "名称", "住所", "電話番号", "評価", "ホームページ", "メール", "インスタグラム", "検索キーワード", "地域"].map((h) => (
                       <th key={h} className="px-3 py-2 text-center font-semibold whitespace-nowrap border-b border-neutral-300">
                         {h}
                       </th>
@@ -250,13 +274,38 @@ export default function Home() {
         )}
       </section>
 
+      
+
       <section className="mt-10 space-y-4">
+ <h2 className="space-y-2 text-lg font-semibold mb-2">検索結果サンプル</h2>
+ <p className="mb-1 text-sm text-neutral-600">※Googleマップ上で、評価の高い順に表示されます。</p>
+ <p className="mb-1 text-sm text-neutral-600">※Googleマップに掲載されている情報のみ取得が可能です。</p>
+ <p className="mb-1 text-sm text-neutral-600">※無料で最大200件の情報を取得できます。</p>
+ <p className="text-sm text-neutral-600">※掲載件数が少ないキーワードの場合、上限の件数まで表示されないことがあります。</p>
+<button
+  type="button"
+  onClick={() => setOpen(true)}
+  aria-label="画像を拡大表示"
+  className="inline-block text-left mb-8"
+>
+  <Image
+    src="/images/sample.png"
+    alt="サンプル画像"
+    width={600}
+    height={400}
+    className="w-full h-auto cursor-zoom-in"
+    priority
+  />
+</button>
+
         <div>
           <h2 className="text-lg font-semibold mb-2">使い方</h2>
-          <ol className="list-decimal list-inside text-neutral-700 space-y-1">
-            <li>「検索キーワード」「地域」「Google Places API キー」を入力</li>
-            <li>「検索実行」をクリック</li>
-            <li>結果を確認し、必要に応じて「CSV」で保存</li>
+          <ol className="list-decimal list-inside text-neutral-700 space-y-3 mb-8">
+            <li>「Google Places APIキー」を取得します（無料・約3分で完了）
+               <a href="https://uenodesign.site/api" target="_blank" rel="noopener noreferrer" className="ml-2 underline" > ▶取得方法はこちらから </a></li>
+            <li>　画面下部のボタンより「初回無料クーポン」を発行します。</li>
+            <li>「検索キーワード・地域・Google Places APIキー」を入力し、「検索実行」をクリックします。</li>
+            <li>　検索結果を確認し、必要に応じて「CSV」で保存してください。</li>
           </ol>
         </div>
         <div>
@@ -265,10 +314,10 @@ export default function Home() {
           </button> */}
           <button
   onClick={() => (window.location.href = "/credits")}
-  className="
+  className="cursor-pointer mb-5
     group inline-flex items-center gap-2 rounded-xl
     border border-zinc-300 bg-gradient-to-b from-white to-zinc-100
-    px-5 py-3 text-sm font-semibold text-zinc-900
+    px-5 py-3 text-base font-semibold text-zinc-900
     shadow-sm ring-1 ring-inset ring-black/5
     transition-all
     hover:-translate-y-0.5 hover:shadow-md
@@ -281,11 +330,46 @@ export default function Home() {
   {/* <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 opacity-70 group-hover:opacity-100">
     <path fill="currentColor" d="M19 7H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm0 2v2H5V9h14ZM5 15v-2h7v2H5Z"/>
   </svg> */}
-  初回無料クーポンorクレジット追加
-  <span className="font-normal text-zinc-600">(5回分：1回40件 / 100円)</span>
+  初回無料クーポン or クレジット追加
+
 </button>
+<br/>
+  <span className="font-normal text-zinc-600">※クレジット追加：5回分（1回40件 / 100円)</span>
         </div>
       </section>
+
+
+{open && (
+  <div
+    role="dialog"
+    aria-modal="true"
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+    onClick={() => setOpen(false)}
+  >
+    <div
+      className="relative w-[90vw] h-[80vh] max-w-6xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <Image
+        src="/images/sample.png"
+        alt="サンプル画像（拡大）"
+        fill
+        className="object-contain select-none"
+        sizes="90vw"
+        priority
+      />
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        aria-label="閉じる"
+        className="absolute top-3 right-3 rounded-md bg-white/90 hover:bg-white px-3 py-1 text-sm font-medium shadow"
+      >
+        ×
+      </button>
+    </div>
+  </div>
+)}
+
 
       {/* ▼ フッター（特商法・利用規約・プライバシー） */}
       <footer className="mt-12 border-t border-neutral-300 pt-6 text-sm text-neutral-600">
