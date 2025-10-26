@@ -244,7 +244,7 @@ export default function Home() {
               <table className="w-full text-left text-sm text-[#1D1D1F]">
                 <thead className="bg-white">
                   <tr className="text-[#1D1D1F]">
-                    {["番号", "店舗名", "住所", "電話番号", "評価", "ホームページ", "メール", "インスタグラム", "検索キーワード", "地域"].map((h) => (
+                    {["No", "名称", "住所", "電話番号", "評価", "ホームページ", "メール", "インスタグラム", "検索キーワード", "地域"].map((h) => (
                       <th key={h} className="px-3 py-2 text-center font-semibold whitespace-nowrap border-b border-neutral-300">
                         {h}
                       </th>
