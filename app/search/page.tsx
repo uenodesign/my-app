@@ -1,6 +1,6 @@
 // app/search/page.tsx
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type ResultRow = {
   番号: number;
@@ -28,32 +28,44 @@ export default function SearchPage() {
   const [remaining, setRemaining] = useState<{ free: number; paid: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // 初回マウントでの自動実行はしない（= ボタン押下でのみ実行）
+  // キー保存（任意）
+  const [rememberKey, setRememberKey] = useState(true);
+  const LS_KEY = "searchpro.apiKey";
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LS_KEY);
+      if (saved) setApiKey(saved);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function runSearch() {
     setLoading(true);
     setError(null);
     try {
+      // 保存/削除
+      try {
+        if (rememberKey) localStorage.setItem(LS_KEY, apiKey);
+        else localStorage.removeItem(LS_KEY);
+      } catch {}
+
       const r = await fetch("/api/search", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          keyword,
-          location,
-          apiKey, // 入力されたAPIキーを使用
-        }),
+        body: JSON.stringify({ keyword, location, apiKey }),
       });
       const j = await r.json();
-      if (!r.ok) throw new Error(j?.error || "検索に失敗しました");
+      if (!r.ok) {
+        throw new Error(j?.error || "検索に失敗しました");
+      }
 
       setRows(Array.isArray(j.results) ? j.results : []);
       setLastMode(j.mode === "paid" ? "paid" : "free");
       setRemaining(j.remaining ? { free: j.remaining.free ?? 0, paid: j.remaining.paid ?? 0 } : null);
     } catch (e) {
-      setError((e as { message?: string })?.message || "Internal Error");
-} catch (e) {
-// サーバーが { error, hint } を返した場合に拾う
-const msg = (e as { message?: string })?.message;
-setError(msg || "エラーが発生しました。しばらくしてからお試しください。");
+      const msg = (e as { message?: string })?.message || "エラーが発生しました。時間をおいて再試行してください。";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -61,7 +73,7 @@ setError(msg || "エラーが発生しました。しばらくしてからお試
 
   return (
     <main className="min-h-screen bg-black text-white p-6 space-y-4">
-      {/* 入力フォーム（submitで勝手に送信されないように抑止） */}
+      {/* 入力フォーム */}
       <form
         className="grid grid-cols-1 md:grid-cols-4 gap-3"
         onSubmit={(e) => {
@@ -96,6 +108,17 @@ setError(msg || "エラーが発生しました。しばらくしてからお試
         >
           {loading ? "検索中…" : "検索する"}
         </button>
+
+        <label className="md:col-span-4 flex items-center gap-2 text-sm text-neutral-300">
+          <input
+            type="checkbox"
+            className="accent-white"
+            checked={rememberKey}
+            onChange={(e) => setRememberKey(e.target.checked)}
+            title="この端末のブラウザにAPIキーを保存します"
+          />
+          この端末にAPIキーを保存
+        </label>
       </form>
 
       {/* 実行結果バッジ & 残数表示 */}
@@ -155,7 +178,7 @@ setError(msg || "エラーが発生しました。しばらくしてからお試
                   <td className="py-2 pr-4">{r.メール ?? "-"}</td>
                   <td className="py-2 pr-4">
                     {r.インスタグラム ? (
-                      <a className="underline" href={r.インスタグラム} target="_blank" rel="noreferrer">
+                      <a className="underline" href={r.インスタグラム} target="_blank" rel="noopener noreferrer">
                         @insta
                       </a>
                     ) : (
@@ -168,6 +191,21 @@ setError(msg || "エラーが発生しました。しばらくしてからお試
           </table>
         </div>
       )}
+
+      {/* APIキーの明示削除 */}
+      <div>
+        <button
+          className="text-xs underline text-neutral-400"
+          onClick={() => {
+            try {
+              localStorage.removeItem(LS_KEY);
+              setApiKey("");
+            } catch {}
+          }}
+        >
+          APIキーを端末から削除
+        </button>
+      </div>
     </main>
   );
 }
