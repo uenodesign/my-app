@@ -39,13 +39,23 @@ export async function POST(req: NextRequest) {
   const evRef = adminDb.collection("stripe_events").doc(event.id);
   if ((await evRef.get()).exists) return json({ ok: true, idempotentBy: "event" }, 200);
 
-  // デバッグ箱
-  const dbgRef = adminDb.collection("stripe_debug_events").doc(event.id);
-  await dbgRef.set({
+// デバッグ箱
+const dbgRef = adminDb.collection("stripe_debug_events").doc(event.id);
+await dbgRef.set(
+  {
     step: "received",
     type: event.type,
+    // ▼ 追加：どのデプロイ/コミットが処理したかを刻む
+    vercelEnv: process.env.VERCEL_ENV || "unknown", // production / preview / development
+    projectUrl:
+      process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || "unknown",
+    commitSha: process.env.VERCEL_GIT_COMMIT_SHA || "unknown",
+    commitMsg: process.env.VERCEL_GIT_COMMIT_MESSAGE || "unknown",
     createdAt: FieldValue.serverTimestamp(),
-  });
+  },
+  { merge: true }
+);
+
 
   try {
     // 対象外イベントは無視
@@ -212,6 +222,11 @@ export async function POST(req: NextRequest) {
       {
         step: "done",
         mode: isPaid ? "paid" : isCouponFree ? "coupon_free" : "trial_free",
+   vercelEnv: process.env.VERCEL_ENV || "unknown",
+    projectUrl:
+      process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || "unknown",
+    commitSha: process.env.VERCEL_GIT_COMMIT_SHA || "unknown",
+    commitMsg: process.env.VERCEL_GIT_COMMIT_MESSAGE || "unknown",
         at: FieldValue.serverTimestamp(),
       },
       { merge: true }
