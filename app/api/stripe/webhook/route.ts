@@ -12,6 +12,8 @@ const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
+const ADD_PAID = 10;
+
 function json(data: unknown, status = 200) {
   return new NextResponse(JSON.stringify(data), {
     status,
@@ -122,7 +124,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (isCouponFree) {
-        // クーポン0円 → free を +1（＝20件/1回）
+        // クーポン0円 → free を +10（＝20件/1回）
         tx.update(keyRef, { free: FieldValue.increment(10), updatedAt: FieldValue.serverTimestamp() });
 
         // 使用済みを両帳簿に刻む（存在する方だけでOK）
@@ -143,7 +145,7 @@ export async function POST(req: NextRequest) {
           type: event.type,
           customerId: customerId || null,
           apiKeyHash,
-          amount: 1,
+          amount: 10,
           reason: "coupon_free",
           trial: false,
           createdAt: FieldValue.serverTimestamp(),
@@ -152,7 +154,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (isTrialFree) {
-        // 純0円（クーポンなし）→ 一度だけ paid を +1（＝40件/1回）
+        // 純0円（クーポンなし）→ 一度だけ paid を +10（＝40件/1回）
         const alreadyByEmail = trialByEmailRef ? (await tx.get(trialByEmailRef)).exists : false;
         const alreadyByCust = trialByCustomerRef ? (await tx.get(trialByCustomerRef)).exists : false;
         if (alreadyByEmail || alreadyByCust) {
@@ -165,8 +167,8 @@ export async function POST(req: NextRequest) {
           });
           return;
         }
-
-        tx.update(keyRef, { paid: FieldValue.increment(1), updatedAt: FieldValue.serverTimestamp() });
+        // 有料　
+        tx.update(keyRef, { paid: FieldValue.increment(10), updatedAt: FieldValue.serverTimestamp() });
 
         if (trialByCustomerRef)
           tx.set(
@@ -185,7 +187,7 @@ export async function POST(req: NextRequest) {
           type: event.type,
           customerId,
           apiKeyHash,
-          amount: 1,
+          amount: 10,
           reason: "trial_free",
           trial: true,
           createdAt: FieldValue.serverTimestamp(),
@@ -194,17 +196,17 @@ export async function POST(req: NextRequest) {
       }
 
       // 有料（100円）→ paid を +1（＝40件/1回）
-      tx.update(keyRef, { paid: FieldValue.increment(1), updatedAt: FieldValue.serverTimestamp() });
+      tx.update(keyRef, { paid: FieldValue.increment(10), updatedAt: FieldValue.serverTimestamp() });
       tx.set(evRef, {
         type: event.type,
         customerId: customerId || null,
         apiKeyHash,
-        amount: 1,
+        amount: 10,
         reason: "paid",
         trial: false,
         createdAt: FieldValue.serverTimestamp(),
       });
-    }); // ← 必ず「});」
+    }); 
 
     await dbgRef.set(
       {
