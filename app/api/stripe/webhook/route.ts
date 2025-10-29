@@ -9,10 +9,13 @@ export const dynamic = "force-dynamic";
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
-
 const stripe = new Stripe(STRIPE_SECRET_KEY);
-
 const ADD_PAID = 10;
+// 追加で使う環境情報
+const COMMIT_SHA = process.env.VERCEL_GIT_COMMIT_SHA || "local";
+const PROJECT_URL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "local";
+const RUNTIME = process.env.VERCEL ? "vercel" : "local";
+
 
 function json(data: unknown, status = 200) {
   return new NextResponse(JSON.stringify(data), {
@@ -34,7 +37,7 @@ export async function POST(req: NextRequest) {
     const msg = (err as { message?: string })?.message ?? "Invalid signature";
     return json({ ok: false, error: msg }, 400);
   }
-
+}
   // --- 冪等性（event.id で一度きり）---
   const evRef = adminDb.collection("stripe_events").doc(event.id);
   if ((await evRef.get()).exists) return json({ ok: true, idempotentBy: "event" }, 200);
@@ -67,7 +70,7 @@ await dbgRef.set(
       );
       return json({ ok: true, ignored: event.type }, 200);
     }
-
+  }
     // ====== 本処理 ======
     const s = event.data.object as Stripe.Checkout.Session;
 
@@ -151,6 +154,7 @@ await dbgRef.set(
             { merge: true }
           );
 
+          
         tx.set(evRef, {
           type: event.type,
           customerId: customerId || null,
@@ -163,78 +167,128 @@ await dbgRef.set(
         return;
       }
 
-      if (isTrialFree) {
-        // 純0円（クーポンなし）→ 一度だけ paid を +10（＝40件/1回）
-        const alreadyByEmail = trialByEmailRef ? (await tx.get(trialByEmailRef)).exists : false;
-        const alreadyByCust = trialByCustomerRef ? (await tx.get(trialByCustomerRef)).exists : false;
-        if (alreadyByEmail || alreadyByCust) {
-          tx.set(evRef, {
-            type: event.type,
-            note: "trial_already_used",
-            customerId: customerId || null,
-            apiKeyHash,
-            createdAt: FieldValue.serverTimestamp(),
-          });
-          return;
-        }
-        // 有料　
-        tx.update(keyRef, { paid: FieldValue.increment(10), updatedAt: FieldValue.serverTimestamp() });
+if (isTrialFree) {
+  // すでにトライアル使用済み？
+  const alreadyByEmail = trialByEmailRef ? (await tx.get(trialByEmailRef)).exists : false;
+  const alreadyByCust = trialByCustomerRef ? (await tx.get(trialByCustomerRef)).exists : false;
+  if (alreadyByEmail || alreadyByCust) {
+    tx.set(evRef, {
+      type: event.type,
+      note: "trial_already_used",
+      customerId: customerId || null,
+      apiKeyHash,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+    return;
+  }
 
-        if (trialByCustomerRef)
-          tx.set(
-            trialByCustomerRef,
-            { used: true, apiKeyHash, emailHash, usedAt: FieldValue.serverTimestamp(), reason: "trial_free" },
-            { merge: true }
-          );
-        if (trialByEmailRef)
-          tx.set(
-            trialByEmailRef,
-            { used: true, apiKeyHash, customerId, usedAt: FieldValue.serverTimestamp(), reason: "trial_free" },
-            { merge: true }
-          );
+  // 現在値を読み取って差分を監査ログに残す
+  const snap = await tx.get(keyRef);
+  const paidBefore = (snap.data()?.paid ?? 0) as number;
+  const delta = 10;
 
-        tx.set(evRef, {
-          type: event.type,
-          customerId,
-          apiKeyHash,
-          amount: 10,
-          reason: "trial_free",
-          trial: true,
-          createdAt: FieldValue.serverTimestamp(),
-        });
-        return;
-      }
+  // 純0円（クーポンなし）→ paid を +10（＝40件×10回）
+  tx.update(keyRef, { paid: FieldValue.increment(delta), updatedAt: FieldValue.serverTimestamp() });
 
-      // 有料（100円）→ paid を +1（＝40件/1回）
-      tx.update(keyRef, { paid: FieldValue.increment(10), updatedAt: FieldValue.serverTimestamp() });
-      tx.set(evRef, {
-        type: event.type,
-        customerId: customerId || null,
-        apiKeyHash,
-        amount: 10,
-        reason: "paid",
-        trial: false,
-        createdAt: FieldValue.serverTimestamp(),
-      });
-    }); 
-
-    await dbgRef.set(
-      {
-        step: "done",
-        mode: isPaid ? "paid" : isCouponFree ? "coupon_free" : "trial_free",
-   vercelEnv: process.env.VERCEL_ENV || "unknown",
-    projectUrl:
-      process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || "unknown",
-    commitSha: process.env.VERCEL_GIT_COMMIT_SHA || "unknown",
-    commitMsg: process.env.VERCEL_GIT_COMMIT_MESSAGE || "unknown",
-        at: FieldValue.serverTimestamp(),
-      },
+  // トライアル使用済みフラグ
+  if (trialByCustomerRef) {
+    tx.set(
+      trialByCustomerRef,
+      { used: true, apiKeyHash, emailHash, usedAt: FieldValue.serverTimestamp(), reason: "trial_free" },
       { merge: true }
     );
-    return json({ ok: true }, 200);
-  } catch (e: unknown) {
-    const msg = (e as { message?: string })?.message ?? "internal error";
-    await dbgRef.set({ step: "error", error: msg, at: FieldValue.serverTimestamp() }, { merge: true });
-    return json({ ok: false, error: msg }, 500);
   }
+  if (trialByEmailRef) {
+    tx.set(
+      trialByEmailRef,
+      { used: true, apiKeyHash, customerId, usedAt: FieldValue.serverTimestamp(), reason: "trial_free" },
+      { merge: true }
+    );
+  }
+
+  // 監査イベント
+  tx.set(evRef, {
+    type: event.type,
+    customerId,
+    apiKeyHash,
+    amount: delta,
+    reason: "trial_free",
+    trial: true,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+
+  // 差分ログ（debug用）
+  tx.set(
+    dbgRef,
+    {
+      step: "done",
+      mode: "trial_free",
+      vercelEnv: process.env.VERCEL_ENV || "unknown",
+      projectUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || "unknown",
+      commitSha: process.env.VERCEL_GIT_COMMIT_SHA || "unknown",
+      commitMsg: process.env.VERCEL_GIT_COMMIT_MESSAGE || "unknown",
+      paid_before: paidBefore,
+      paid_delta: delta,
+      paid_after_expected: paidBefore + delta,
+      at: FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  return;
 }
+
+// 有料（100円）→ paid を +10（＝40件×10回）
+{
+  const snap = await tx.get(keyRef);
+  const paidBefore = (snap.data()?.paid ?? 0) as number;
+  const delta = 10;
+
+  tx.update(keyRef, { paid: FieldValue.increment(delta), updatedAt: FieldValue.serverTimestamp() });
+
+  tx.set(evRef, {
+    type: event.type,
+    customerId: customerId || null,
+    apiKeyHash,
+    amount: delta,
+    reason: "paid",
+    trial: false,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+
+  // 差分ログ（debug用）— トランザクション内で書く
+  tx.set(
+    dbgRef,
+    {
+      step: "done",
+      mode: "paid",
+      vercelEnv: process.env.VERCEL_ENV || "unknown",
+      projectUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || "unknown",
+      commitSha: process.env.VERCEL_GIT_COMMIT_SHA || "unknown",
+      commitMsg: process.env.VERCEL_GIT_COMMIT_MESSAGE || "unknown",
+      paid_before: paidBefore,
+      paid_delta: delta,
+      paid_after_expected: paidBefore + delta,
+      at: FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+} // ← 有料ブロックを閉じる
+
+}); // ← runTransaction を閉じる（ここが必須）
+
+// ★ トランザクションの外で最終ログ & 正常レスポンス
+await dbgRef.set(
+  {
+    step: "done",
+    mode: isPaid ? "paid" : isCouponFree ? "coupon_free" : "trial_free",
+    vercelEnv: process.env.VERCEL_ENV || "unknown",
+    projectUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || "unknown",
+    commitSha: process.env.VERCEL_GIT_COMMIT_SHA || "unknown",
+    commitMsg: process.env.VERCEL_GIT_COMMIT_MESSAGE || "unknown",
+    at: FieldValue.serverTimestamp(),
+  },
+  { merge: true }
+);
+
+return json({ ok: true }, 200);
