@@ -156,7 +156,7 @@ export default function CreditsPage() {
             <h2 className="text-sm font-medium text-gray-900">内訳</h2>
             <ul className="mt-2 text-sm text-gray-700 list-disc pl-5 space-y-1">
               <li>初回：無料（自動でクーポン適用 / カード不要）</li>
-              <li>2回目以降：100円で +10回 付与</li>
+              <li>2回目以降：300円（+10回付与）</li>
             </ul>
           </div>
         </form>
