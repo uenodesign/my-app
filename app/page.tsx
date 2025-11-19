@@ -334,7 +334,7 @@ export default function Home() {
 
 </button>
 <br/>
-  <span className="font-normal text-zinc-600">※クレジット追加：300円（10回分/1回40件）</span>
+  <span className="font-normal text-zinc-600">※クレジット追加：300円（20回分/1回40件）</span>
         </div>
       </section>
 
