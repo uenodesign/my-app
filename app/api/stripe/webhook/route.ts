@@ -12,7 +12,7 @@ const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
 // 付与単位（有料・トライアルで増やす回数）
-const ADD_PAID = 10;
+const ADD_PAID = 20;
 
 function json(data: unknown, status = 200) {
   return new NextResponse(JSON.stringify(data), {

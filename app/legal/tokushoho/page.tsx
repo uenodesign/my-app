@@ -23,7 +23,7 @@ export default function Tokushoho() {
               ["引渡時期", "決済完了後、即時にクレジットが付与されます。"],
               ["受け付け可能な決済手段", "クレジットカード（Stripe）"],
               ["決済期間", "クレジットカード決済は即時に処理されます。"],
-              ["販売価格", "商品ページに表示（クレジット追加：300円（10回分/1回40件）"],
+              ["販売価格", "商品ページに表示（クレジット追加：300円（20回分/1回40件）"],
             ].map(([label, value]) => (
               <tr key={label} className="odd:bg-white">
                 <th className="w-56 px-4 py-3 text-left font-semibold text-[#1D1D1F] border-b border-neutral-300 align-top">{label}</th>
