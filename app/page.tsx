@@ -278,12 +278,12 @@ export default function Home() {
       
 
       <section className="mt-10 space-y-4">
- <h2 className="space-y-2 text-2xl font-semibold mb-2">下記の画像のように、データを取得できます。</h2>
+ <h2 className="space-y-2 text-2xl font-semibold mb-3">下記の画像のように、データを取得できます。</h2>
 <button
   type="button"
   onClick={() => setOpen(true)}
   aria-label="画像を拡大表示"
-  className="inline-block text-left mb-8"
+  className="inline-block text-left mb-3"
 >
   <Image
     src="/images/sample.png"
@@ -298,7 +298,7 @@ export default function Home() {
  <p className="mb-1 text-base text-neutral-600">※Googleマップに掲載されている情報のみ取得が可能です。</p>
  <p className="mb-1 text-base text-neutral-600">※無料で最大200件の情報を取得できます。</p>
  <p className="mb-1 text-base text-neutral-600">※掲載件数が少ないキーワードの場合、上限の件数まで表示されないことがあります。</p>
- <p className="mb-8 text-base text-neutral-600">※ご希望どおりの結果が得られない場合でも、補償いたしかねますので、あらかじめご了承ください。</p>
+ <p className="mb-12 text-base text-neutral-600">※ご希望どおりの結果が得られない場合でも、補償いたしかねますので、あらかじめご了承ください。</p>
 
         <div>
           <h2 className="text-2xl font-semibold mb-2">使い方</h2>
