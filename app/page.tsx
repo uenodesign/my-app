@@ -137,7 +137,7 @@ export default function Home() {
 
       <section className="mb-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="検索キーワード（例：美容室、カフェ、ジム、など）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
+          <input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="検索キーワード（例：カフェ、らーめん、美容院、など）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
           <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="地域（例：◯◯市、など）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
           <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="APIキー（Google Places API Key）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
         </div>
