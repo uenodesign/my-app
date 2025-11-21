@@ -11,8 +11,10 @@ const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
-// 付与単位（有料・トライアルで増やす回数）
-const ADD_PAID = 20;
+// 付与単位
+const ADD_COUPON_FREE = 10; // クーポン無料で増やす回数
+const ADD_TRIAL_FREE = 10;  // 純トライアルで増やす回数（将来用、現在は未使用）
+const ADD_PAID = 20;        // 有料購入で増やす回数（300円）
 
 function json(data: unknown, status = 200) {
   return new NextResponse(JSON.stringify(data), {
@@ -90,7 +92,7 @@ export async function POST(req: NextRequest) {
     const hasSessionDiscounts =
       Array.isArray(sessionDiscountsUnknown) && sessionDiscountsUnknown.length > 0;
 
-    const isPaid = amountTotal > 0; // 100円
+    const isPaid = amountTotal > 0; // 300円
     const isCouponFree =
       amountTotal === 0 && (amountDiscount > 0 || hasBreakdownDiscounts || hasSessionDiscounts); // クーポン0円
     const isTrialFree = amountTotal === 0 && !isCouponFree; // 純0円（クーポンなし）
@@ -141,7 +143,7 @@ export async function POST(req: NextRequest) {
       // --- クーポン無料 ---
       if (isCouponFree) {
         tx.update(keyRef, {
-          free: FieldValue.increment(ADD_PAID),
+          free: FieldValue.increment(ADD_COUPON_FREE),
           updatedAt: FieldValue.serverTimestamp(),
         });
 
@@ -164,7 +166,7 @@ export async function POST(req: NextRequest) {
           type: event.type,
           customerId: customerId || null,
           apiKeyHash,
-          amount: ADD_PAID,
+          amount: ADD_COUPON_FREE,
           reason: "coupon_free",
           trial: false,
           createdAt: FieldValue.serverTimestamp(),
@@ -206,7 +208,7 @@ export async function POST(req: NextRequest) {
         const paidBefore = (snap.data()?.paid ?? 0) as number;
 
         tx.update(keyRef, {
-          paid: FieldValue.increment(ADD_PAID),
+          paid: FieldValue.increment(ADD_TRIAL_FREE),
           updatedAt: FieldValue.serverTimestamp(),
         });
 
@@ -229,7 +231,7 @@ export async function POST(req: NextRequest) {
           type: event.type,
           customerId,
           apiKeyHash,
-          amount: ADD_PAID,
+          amount: ADD_TRIAL_FREE,
           reason: "trial_free",
           trial: true,
           createdAt: FieldValue.serverTimestamp(),
@@ -246,8 +248,8 @@ export async function POST(req: NextRequest) {
             commitSha: process.env.VERCEL_GIT_COMMIT_SHA || "unknown",
             commitMsg: process.env.VERCEL_GIT_COMMIT_MESSAGE || "unknown",
             paid_before: paidBefore,
-            paid_delta: ADD_PAID,
-            paid_after_expected: paidBefore + ADD_PAID,
+            paid_delta: ADD_TRIAL_FREE,
+            paid_after_expected: paidBefore + ADD_TRIAL_FREE,
             at: FieldValue.serverTimestamp(),
           },
           { merge: true }
@@ -255,7 +257,7 @@ export async function POST(req: NextRequest) {
         return;
       }
 
-      // --- 有料（100円） ---
+      // --- 有料（300円） ---
       {
         const snap = await tx.get(keyRef);
         const paidBefore = (snap.data()?.paid ?? 0) as number;

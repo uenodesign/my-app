@@ -4,7 +4,7 @@ export default function Tokushoho() {
     <main className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] p-6">
       <header className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">
-          <a href="https://search.uenodesign.site/">検索ツールPro</a>
+          <a href="https://search.uenodesign.site/">Search Pro</a>
         </h1>
       </header>
       <h2 className="text-2xl font-bold mb-6">特定商取引法に基づく表記</h2>

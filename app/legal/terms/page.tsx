@@ -6,7 +6,7 @@ export default function Terms() {
     <main className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] p-6">
       <header className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">
-          <a href="https://search.uenodesign.site/">検索ツールPro</a>
+          <a href="https://search.uenodesign.site/">Search Pro</a>
         </h1>
       </header>
       <div className="max-w-3xl mx-auto space-y-6">
