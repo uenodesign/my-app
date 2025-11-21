@@ -234,7 +234,7 @@ export default function Home() {
                 CSV保存
               </button>
             </div>
-            <p className="mb-15 text-base text-neutral-600">※この画面を閉じると検索結果を再表示できませんので、お早めに保存してください。</p>
+            <p className="mb-15 text-base text-neutral-600">※この画面を閉じると検索結果を再表示できませんので、必要に応じて保存してください。</p>
      
           </>
         ) : (
