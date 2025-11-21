@@ -131,7 +131,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] p-6">
       <header className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">検索ツールPro</h1>
+        <h1 className="text-3xl font-bold">Search Pro</h1>
         <span className="text-sm text-neutral-500">{headerRight}</span>
       </header>
 
