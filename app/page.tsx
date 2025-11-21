@@ -229,11 +229,12 @@ export default function Home() {
               </table>
             </div>
 
-            <div className="mt-4 flex gap-3">
-              <button onClick={downloadCSV} className="px-4 py-2 rounded bg-[#E1E1E7] text-[#1D1D1F] cursor-pointer">
-                CSV
+            <div className="mt-3 mb-5 flex gap-3">
+              <button onClick={downloadCSV} className="px-4 py-2 rounded bg-[#1D1D1F] text-[#E1E1E7] cursor-pointer">
+                CSVで保存
               </button>
             </div>
+            <p className="mb-10 text-base text-neutral-600">※この画面を閉じると検索結果を再表示できませんので、お早めに保存してください。</p>
           </>
         ) : (
           <>
@@ -296,8 +297,8 @@ export default function Home() {
  <p className="mb-1 text-base text-neutral-600">※Googleマップ上で、評価の高い順に表示されます。</p>
  <p className="mb-1 text-base text-neutral-600">※Googleマップに掲載されている情報のみ取得が可能です。</p>
  <p className="mb-1 text-base text-neutral-600">※無料で最大200件の情報を取得できます。</p>
- <p className="text-base text-neutral-600">※掲載件数が少ないキーワードの場合、上限の件数まで表示されないことがあります。</p>
- <p className="text-base text-neutral-600">※ご希望どおりの結果が得られない場合でも、補償いたしかねますので、あらかじめご了承ください。</p>
+ <p className="mb-1 text-base text-neutral-600">※掲載件数が少ないキーワードの場合、上限の件数まで表示されないことがあります。</p>
+ <p className="mb-8 text-base text-neutral-600">※ご希望どおりの結果が得られない場合でも、補償いたしかねますので、あらかじめご了承ください。</p>
 
         <div>
           <h2 className="text-2xl font-semibold mb-2">使い方</h2>
@@ -318,7 +319,7 @@ export default function Home() {
   className="cursor-pointer mb-5
     group inline-flex items-center gap-2 rounded-xl
     border border-zinc-300 bg-gradient-to-b from-white to-zinc-100
-    px-5 py-3 text-base font-semibold text-zinc-900
+    px-5 py-3 text-lg font-semibold text-zinc-900
     shadow-sm ring-1 ring-inset ring-black/5
     transition-all
     hover:-translate-y-0.5 hover:shadow-md
@@ -348,7 +349,7 @@ export default function Home() {
     onClick={() => setOpen(false)}
   >
     <div
-      className="relative w-[90vw] h-[80vh] max-w-6xl"
+      className="relative w-[100vw] h-[90vh] max-w-6xl"
       onClick={(e) => e.stopPropagation()}
     >
       <Image
