@@ -277,11 +277,7 @@ export default function Home() {
       
 
       <section className="mt-10 space-y-4">
- <h2 className="space-y-2 text-lg font-semibold mb-2">検索結果サンプル</h2>
- <p className="mb-1 text-sm text-neutral-600">※Googleマップ上で、評価の高い順に表示されます。</p>
- <p className="mb-1 text-sm text-neutral-600">※Googleマップに掲載されている情報のみ取得が可能です。</p>
- <p className="mb-1 text-sm text-neutral-600">※無料で最大200件の情報を取得できます。</p>
- <p className="text-sm text-neutral-600">※掲載件数が少ないキーワードの場合、上限の件数まで表示されないことがあります。</p>
+ <h2 className="space-y-2 text-2xl font-semibold mb-2">下記の画像のように、データを取得できます。</h2>
 <button
   type="button"
   onClick={() => setOpen(true)}
@@ -297,10 +293,15 @@ export default function Home() {
     priority
   />
 </button>
+ <p className="mb-1 text-base text-neutral-600">※Googleマップ上で、評価の高い順に表示されます。</p>
+ <p className="mb-1 text-base text-neutral-600">※Googleマップに掲載されている情報のみ取得が可能です。</p>
+ <p className="mb-1 text-base text-neutral-600">※無料で最大200件の情報を取得できます。</p>
+ <p className="text-base text-neutral-600">※掲載件数が少ないキーワードの場合、上限の件数まで表示されないことがあります。</p>
+ <p className="text-base text-neutral-600">※ご希望どおりの結果が得られない場合でも、補償いたしかねますので、あらかじめご了承ください。</p>
 
         <div>
-          <h2 className="text-lg font-semibold mb-2">使い方</h2>
-          <ol className="list-decimal list-inside text-neutral-700 space-y-3 mb-8">
+          <h2 className="text-2xl font-semibold mb-2">使い方</h2>
+          <ol className="list-decimal list-inside text-lg text-neutral-700 space-y-3 mb-8">
             <li>「Google Places APIキー」を取得します（無料・約3分で完了）
                <a href="https://uenodesign.site/api" target="_blank" rel="noopener noreferrer" className="ml-2 underline" > ▶取得方法はこちらから </a></li>
             <li>　画面下部のボタンより「初回無料クーポン」を発行します。</li>
