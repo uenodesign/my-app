@@ -2,7 +2,7 @@
 import "./globals.css";
 import TokenBootstrap from "./_components/TokenBootstrap"; // ← ここに追記
 
-export const metadata = { title: "検索ツールPro" };
+export const metadata = { title: "Search Pro" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
