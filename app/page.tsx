@@ -137,7 +137,7 @@ export default function Home() {
 
       <section className="mb-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="検索キーワード（例：美容室、カフェ、ジム、など）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
+          <input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="検索キーワード（例：カフェ、らーめん、美容院、など）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
           <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="地域（例：◯◯市、など）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
           <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="APIキー（Google Places API Key）" className="w-full px-4 py-3 rounded-lg bg-white text-[#1D1D1F] placeholder-neutral-400 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-[#0076DF]" />
         </div>
@@ -229,12 +229,13 @@ export default function Home() {
               </table>
             </div>
 
-            <div className="mt-3 mb-5 flex gap-3">
-              <button onClick={downloadCSV} className="px-4 py-2 rounded bg-[#1D1D1F] text-[#E1E1E7] cursor-pointer">
-                CSVで保存
+            <div className="mt-5 mb-5 flex gap-3">
+              <button onClick={downloadCSV} className="px-4 py-2 rounded-md bg-[#1D1D1F] text-[#E1E1E7] cursor-pointer">
+                CSV保存
               </button>
             </div>
-            <p className="mb-10 text-base text-neutral-600">※この画面を閉じると検索結果を再表示できませんので、お早めに保存してください。</p>
+            <p className="mb-15 text-base text-neutral-600">※この画面を閉じると検索結果を再表示できませんので、お早めに保存してください。</p>
+     
           </>
         ) : (
           <>
@@ -277,7 +278,7 @@ export default function Home() {
 
       
 
-      <section className="mt-10 space-y-4">
+      <section className="mt-20 space-y-4">
  <h2 className="space-y-2 text-2xl font-semibold mb-3">下記の画像のように、データを取得できます。</h2>
 <button
   type="button"
