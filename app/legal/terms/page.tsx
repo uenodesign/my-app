@@ -11,7 +11,9 @@ export default function Terms() {
       </header>
       <div className="max-w-3xl mx-auto space-y-6">
         <h2 className="text-2xl font-bold">利用規約</h2>
-        <p className="text-[#1D1D1F] text-sm">本規約は、UENO DESIGN（以下「当社」）が提供する本サービスの利用条件を定めるものです。 ご利用にあたり本規約に同意いただいたものとみなします。</p>
+        <p className="text-[#1D1D1F] text-sm">本規約は、Search Pro（以下「本サービス」）の利用条件を定めるものです。
+本サービスをご利用いただくことで、本規約に同意いただいたものとみなします。
+</p>
 
         <section>
           <h2 className="text-lg font-semibold mb-2">1. 定義</h2>
@@ -37,26 +39,42 @@ export default function Terms() {
 
         <section>
           <h2 className="text-lg font-semibold mb-2">4. 免責</h2>
-          <p className="text-[#1D1D1F] text-sm">当社は、本サービスの正確性・完全性・有用性を保証しません。利用により生じたいかなる損害についても、当社は責任を負いません。</p>
+          <p className="text-[#1D1D1F] text-sm">当方は、本サービスの正確性・完全性・有用性を保証するものではありません。
+本サービスの利用により生じたいかなる損害についても、当方は責任を負いません。</p>
         </section>
 
         <section>
           <h2 className="text-lg font-semibold mb-2">5. 利用制限・停止</h2>
-          <p className="text-[#1D1D1F] text-sm">当社は、必要と判断した場合、事前の通知なく本サービスの全部または一部の提供を停止・中断・終了できるものとします。</p>
+          <p className="text-[#1D1D1F] text-sm">当方は、必要と判断した場合、事前の通知なく本サービスの全部または一部の提供を
+停止・中断・終了することができます。</p>
         </section>
 
         <section>
           <h2 className="text-lg font-semibold mb-2">6. 規約の変更</h2>
-          <p className="text-[#1D1D1F] text-sm">当社は、必要に応じて本規約を変更することができます。変更後の規約は、当社所定の方法で周知した時点から効力を生じます。</p>
+          <p className="text-[#1D1D1F] text-sm">当方は、必要に応じて本規約を変更することができます。
+変更後の規約は、本サービス所定の方法で周知した時点から効力を生じます。</p>
         </section>
 
         <section>
           <h2 className="text-lg font-semibold mb-2">7. 準拠法・裁判管轄</h2>
-          <p className="text-[#1D1D1F] text-sm">本規約は日本法に準拠します。本サービスに関して紛争が生じた場合、当社の所在地を第一審の専属的合意管轄裁判所とします。</p>
+          <p className="text-[#1D1D1F] text-sm">本規約は日本法に準拠します。
+本サービスに関して紛争が生じた場合、当方の所在地を管轄する裁判所を
+第一審の専属的合意管轄裁判所とします。</p>
         </section>
 
-        <footer className="text-gray-400 text-xs">最終更新日：{new Date().toLocaleDateString("ja-JP")}</footer>
+        <footer className="mb-10 text-gray-400 text-xs">最終更新日：{new Date().toLocaleDateString("ja-JP")}</footer>
+
+        <div className="flex justify-center">
+ <a
+          className="px-4 py-2 rounded bg-[#E1E1E7] text-[#1D1D1F] cursor-pointer"
+          href="https://search.uenodesign.site/"
+        >
+          ホームへ戻る
+        </a>
+</div>
+     
       </div>
+
 
       {/* ▼ フッター（特商法・利用規約・プライバシー） */}
       <footer className="mt-12 border-t border-neutral-300 pt-6 text-sm text-neutral-600">

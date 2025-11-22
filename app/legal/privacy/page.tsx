@@ -11,14 +11,14 @@ export default function Privacy() {
       </header>
       <div className="max-w-3xl mx-auto space-y-6">
         <h2 className="text-2xl font-bold">プライバシーポリシー</h2>
-        <p className="text-[#1D1D1F] text-sm">{`{事業者名}`}（以下「当社」）は、本サービスの提供に際し取得する情報の取扱いについて、以下のとおり定めます。</p>
+        <p className="text-[#1D1D1F] text-sm">本サービスの提供に際して取得する情報の取扱いについては、以下のとおり定めます。</p>
 
         <section>
           <h2 className="text-lg font-semibold mb-2">1. 取得する情報</h2>
           <ul className="list-disc list-inside text-[#1D1D1F] text-sm space-y-1">
             <li>ユーザーが入力する検索キーワード・地域・Google API キー（※サーバー側にはハッシュ化 ID のみ保存）</li>
             <li>利用回数・利用日時等のメタデータ</li>
-            <li>決済に関する情報（Stripe を利用し、カード情報は当社サーバーで保持しません）</li>
+            <li>決済に関する情報（Stripe を利用し、カード情報は当方サーバーで保持しません）</li>
           </ul>
         </section>
 
@@ -56,8 +56,19 @@ export default function Privacy() {
           <p className="text-[#1D1D1F] text-sm">ueno（＠）uenodesign.site　(@)を@に変更ください。</p>
         </section>
 
-        <footer className="text-gray-400 text-xs">最終更新日：{new Date().toLocaleDateString("ja-JP")}</footer>
+        <footer className="mb-10 text-gray-400 text-xs">最終更新日：{new Date().toLocaleDateString("ja-JP")}</footer>
+
+<div className="flex justify-center">
+ <a
+          className="px-4 py-2 rounded bg-[#E1E1E7] text-[#1D1D1F] cursor-pointer"
+          href="https://search.uenodesign.site/"
+        >
+          ホームへ戻る
+        </a>
+</div>
       </div>
+
+      
 
       {/* ▼ フッター（特商法・利用規約・プライバシー） */}
       <footer className="mt-12 border-t border-neutral-300 pt-6 text-sm text-neutral-600">
