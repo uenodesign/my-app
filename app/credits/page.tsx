@@ -113,8 +113,8 @@ export default function CreditsPage() {
         {/* ←ここがパンくず */}
    <Breadcrumbs className="mt-2 mb-12" />
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-900">APIキー</label>
+          <div className="mb-10">
+            <label className="block text-base font-semibold text-gray-900">APIキー</label>
             <input
               className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-gray-900 shadow-sm outline-none focus:ring-2 focus:ring-black"
               type="text"
@@ -123,13 +123,13 @@ export default function CreditsPage() {
               onChange={(e) => setApiKey(e.target.value)}
               autoComplete="off"
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-3 text-sm text-gray-500">
               このAPIキーにクレジットが付与されます（検索はこのキーで行われます）。
             </p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-900">メールアドレス</label>
+          <div className="mb-15">
+            <label className="block text-base font-semibold text-gray-900">メールアドレス</label>
             <input
               className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-gray-900 shadow-sm outline-none focus:ring-2 focus:ring-black"
               type="email"
@@ -146,7 +146,7 @@ export default function CreditsPage() {
             type="submit"
             disabled={disabled}
             className={`w-full rounded-xl px-4 py-3 text-white transition ${
-              disabled ? "bg-gray-300 cursor-not-allowed" : "bg-black hover:opacity-90"
+              disabled ? "bg-gray-300 cursor-not-allowed" : "bg-black hover:opacity-90 cursor-pointer"
             }`}
           >
             {submitting ? "お待ちください…" : "支払いへ進む（初回無料）"}
@@ -156,7 +156,7 @@ export default function CreditsPage() {
             <h2 className="text-sm font-medium text-gray-900">内訳</h2>
             <ul className="mt-2 text-sm text-gray-700 list-disc pl-5 space-y-1">
               <li>初回：無料（自動でクーポン適用 / カード不要）</li>
-              <li>2回目以降：300円（+20回付与）</li>
+              <li>2回目以降：300円（20回分／1回40件）</li>
             </ul>
           </div>
         </form>

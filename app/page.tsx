@@ -239,10 +239,10 @@ export default function Home() {
           </>
         ) : (
           <>
-            <p className="text-sm text-neutral-600">検索結果がここに表示されます。</p>
+            {/* <p className="text-sm text-neutral-600">検索結果がここに表示されます。</p> */}
 
             {/* ▼ プレースホルダー：本番テーブルと同じ見た目（ゼブラも同様） */}
-            <div className="mt-4 rounded-xl border-2 border-dashed border-neutral-300 p-0 overflow-hidden bg-white/50">
+            {/* <div className="mt-4 rounded-xl border-2 border-dashed border-neutral-300 p-0 overflow-hidden bg-white/50">
               <table className="w-full text-left text-sm text-[#1D1D1F]">
                 <thead className="bg-white">
                   <tr className="text-[#1D1D1F]">
@@ -253,9 +253,9 @@ export default function Home() {
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody> */}
                   {/* ダミー3行（ゼブラ確認のための薄い行） */}
-                  {[1].map((i) => (
+                  {/* {[1].map((i) => (
                     <tr key={i} className="odd:bg-[#F0F0F2] even:bg-white">
                       <td className="px-3 py-2 text-center text-transparent select-none border-b border-neutral-200">{i}</td>
                       <td className="px-3 py-2 text-transparent select-none border-b border-neutral-200">プレースホルダー</td>
@@ -271,15 +271,16 @@ export default function Home() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </div> */}
           </>
         )}
       </section>
 
       
 
-      <section className="mt-20 space-y-4">
- <h2 className="space-y-2 text-2xl font-semibold mb-3">下記の画像のように、データを取得できます。</h2>
+      <section className="mt-10 space-y-4">
+
+ <h2 className="space-y-2 text-2xl font-semibold mt-12 mb-3 border-t border-neutral-300 pt-10">下記の画像のように、データを取得できます。</h2>
 <button
   type="button"
   onClick={() => setOpen(true)}
@@ -306,7 +307,7 @@ export default function Home() {
           <ol className="list-decimal list-inside text-lg text-neutral-700 space-y-3 mb-8">
             <li>「Google Places APIキー」を取得します（無料・約3分で完了）
                <a href="https://uenodesign.site/api" target="_blank" rel="noopener noreferrer" className="ml-2 underline" > ▶取得方法はこちらから </a></li>
-            <li>　画面下部のボタンより「初回無料クーポン」を発行します。</li>
+            <li>「クレジットを追加する」をクリックします。</li>
             <li>「検索キーワード・地域・Google Places APIキー」を入力し、「検索実行」をクリックします。</li>
             <li>　検索結果を確認し、必要に応じて「CSV」で保存してください。</li>
           </ol>
@@ -333,11 +334,12 @@ export default function Home() {
   {/* <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 opacity-70 group-hover:opacity-100">
     <path fill="currentColor" d="M19 7H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm0 2v2H5V9h14ZM5 15v-2h7v2H5Z"/>
   </svg> */}
-  初回無料クーポン or クレジット追加
+  クレジットを追加する
 
 </button>
 <br/>
-  <span className="font-normal text-zinc-600">※クレジット追加：300円（20回分/1回40件）</span>
+  <p className="mb-1 text-base text-neutral-600">※初回：無料（自動でクーポン適用・カード登録不要）</p>
+  <p className="mb-1 text-base text-neutral-600">※2回目以降：300円（20回分／1回40件まで）</p>
         </div>
       </section>
 
