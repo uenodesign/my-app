@@ -318,9 +318,9 @@ export default function Home() {
           <button
   onClick={() => (window.location.href = "/credits")}
   className="cursor-pointer mb-5
-    group inline-flex items-center gap-2 rounded-xl
-    border border-zinc-300 bg-gradient-to-b from-white to-zinc-100
-    px-5 py-3 text-lg font-semibold text-zinc-900
+    group inline-flex items-center gap-2 rounded-lg
+    border border-zinc-300 bg-[#1D1D1F] text-[#E1E1E7]
+    px-6 py-3 text-base font-semibold 
     shadow-sm ring-1 ring-inset ring-black/5
     transition-all
     hover:-translate-y-0.5 hover:shadow-md
