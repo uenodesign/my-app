@@ -146,7 +146,7 @@ export default function CreditsPage() {
             type="submit"
             disabled={disabled}
             className={`w-full rounded-xl px-4 py-3 text-white transition ${
-              disabled ? "cursor-pointer bg-gray-300 cursor-not-allowed" : "bg-black hover:opacity-90"
+              disabled ? "bg-gray-300 cursor-not-allowed" : "bg-black hover:opacity-90 cursor-pointer"
             }`}
           >
             {submitting ? "お待ちください…" : "支払いへ進む（初回無料）"}
